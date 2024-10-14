@@ -76,8 +76,24 @@ def Grafo():
                 spot.show(win, rojo)
     pygame.display.flip()
 
+def EscribirArchivo():
+    global directorio
+    global indice
+    while directorio in os.listdir():
+        indice += 1
+        directorio = laberinto + str(indice) + '.txt'
 
-def Maze(x, y):
+    with open(directorio, 'w') as wf:
+        for i in range(columna):
+            for j in range(fila):
+                if mapa[j][i].pared:
+                    wf.write("I")
+                else:
+                    wf.write("·")
+            wf.write("\n")
+    return directorio
+
+def laberinto(x, y):
     UnicaCelda(x, y)
     lista.append((x, y))
     while len(lista) > 0:
@@ -96,30 +112,31 @@ def Maze(x, y):
                 celda.append("Norte")
 
         if len(celda) > 0:
-            current_cell = (random.choice(celda))
+            celdaAdyasente = (random.choice(celda))
 
-            if current_cell == "Este":
+            if celdaAdyasente == "Este":
                 ParedEste(x, y)
                 x = x+2
                 mapa[x-1][y].visitado = True
                 mapa[x][y].visitado = True
                 lista.append((x, y))
 
-            elif current_cell == "Oeste":
+
+            elif celdaAdyasente == "Oeste":
                 ParedOeste(x, y)
                 x = x-2
                 mapa[x+1][y].visitado = True
                 mapa[x][y].visitado = True
                 lista.append((x, y))
 
-            elif current_cell == "Norte":
+            elif celdaAdyasente == "Norte":
                 ParedNorte(x, y)
                 y = y - 2
                 mapa[x][y+1].visitado = True
                 mapa[x][y].visitado = True
                 lista.append((x, y))
 
-            elif current_cell == "Sur":
+            elif celdaAdyasente == "Sur":
                 ParedSur(x, y)
                 y = y + 2
                 mapa[x][y-1].visitado = True
@@ -132,25 +149,6 @@ def Maze(x, y):
         pygame.display.flip()
     global fin
     fin = True
-
-
-def EscribirArchivo():
-    global directorio
-    global indice
-    while directorio in os.listdir():
-        indice += 1
-        directorio = laberinto + str(indice) + '.txt'
-
-    with open(directorio, 'w') as wf:
-        for i in range(columna):
-            for j in range(fila):
-                if mapa[j][i].pared:
-                    wf.write("I")
-                else:
-                    wf.write("·")
-            wf.write("\n")
-    return directorio
-
 
 # PROGRAMA PRINCIPAL
 for i in range(columna):
@@ -173,7 +171,7 @@ while True:
             if event.key == pygame.K_RETURN:
                 inicio = True
     if inicio and not fin:
-        Maze(0, 0)
+        laberinto(0, 0)
         msg = EscribirArchivo()
         Tk().wm_withdraw()
         messagebox.showinfo("Generador de laberintos","El laberinto ha sido generado" + directorio)
