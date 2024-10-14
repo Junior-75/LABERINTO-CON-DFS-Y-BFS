@@ -74,6 +74,23 @@ def Get_Maze(laberinto):
                 if line[j] == 'I':
                     grid[j][i].wall = True
 
+def Grafico():
+    win.fill(BLACK)
+    for i in range(cols):
+        for j in range(rows):
+            spot = grid[i][j]
+            spot.show(win, COLOR_DE_FONDO)
+            if spot.path:
+                spot.show(win, COLOR_DE_FONDO)
+                spot.show(win, SHORTEST_PATH)
+            elif spot.visited:
+                spot.show(win, GREEN)
+            if spot == grid[0][0]:
+                spot.show(win, BLUE)
+            if spot == grid[cols-1][rows-1]:
+                spot.show(win, RED)
+    pygame.display.flip()
+
 
 def DFS():
     start = grid[0][0]
@@ -98,6 +115,7 @@ def DFS():
                 neighbor.prev = current
                 stack.append(neighbor)
         
+        Grafico()
 
 # PROGRAMA PRINCIPAL
 laberinto = "Laberinto_1.txt" #Cambiar el numero de laberinto correspondiente
