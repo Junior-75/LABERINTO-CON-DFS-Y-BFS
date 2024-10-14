@@ -13,7 +13,7 @@ BLACK = (0, 0, 0)
 GREEN = (0, 255, 0)
 WHITE = (255, 255, 255)
 YELLOW = (255, 255, 0)
-SHORTEST_PATH = (239, 48, 188)
+SHORTEST_PATH = (239, 48, 188) # Rosado oscuro
 COLOR_DE_FONDO = (44, 62, 80)
 
 size = (width, height) = 650, 650
@@ -81,6 +81,25 @@ def Get_Maze(laberinto):
                 if line[j] == 'I':
                     grid[j][i].wall = True
 
+def Grafico():
+    win.fill(BLACK)
+    for i in range(cols):
+        for j in range(rows):
+            spot = grid[i][j]
+            spot.show(win, COLOR_DE_FONDO)
+            if spot.path:
+                spot.show(win, COLOR_DE_FONDO)
+                spot.show(win, SHORTEST_PATH) # Tercer argumento de desfase al graficar el camino (default 1)
+            elif spot.visited:
+                spot.show(win, GREEN)
+            if spot in queue and not flag:
+                spot.show(win, SHORTEST_PATH)
+            if spot == grid[0][0]:
+                spot.show(win, BLUE)
+            if spot == grid[cols-1][rows-1]:
+                spot.show(win, RED)
+    pygame.display.flip()
+
 
 def Dijkstra():
     start = grid[0][0]
@@ -103,7 +122,7 @@ def Dijkstra():
                     temp = temp.prev   
                 if not flag:
                     flag = True
-                    print("Done")
+                    print("Camino encontrado")
                 elif flag:
                     continue
             if flag == False:
@@ -113,7 +132,7 @@ def Dijkstra():
                         i.visited = True
                         i.prev = current
                         queue.append(i)
-
+        Grafico()
         if flag and noflag:
             break
 
