@@ -26,6 +26,8 @@ stack = []
 startflag = False
 end_maze = False
 
+flag = noflag = startflag = False
+
 class Spot:
     def __init__(self, i, j):
         self.x, self.y = i, j
@@ -85,6 +87,8 @@ def Grafico():
                 spot.show(win, SHORTEST_PATH)
             elif spot.visited:
                 spot.show(win, GREEN)
+            if spot in stack and not flag:
+                spot.show(win, SHORTEST_PATH)
             if spot == grid[0][0]:
                 spot.show(win, BLUE)
             if spot == grid[cols-1][rows-1]:
@@ -99,23 +103,35 @@ def DFS():
     start.visited = True
     stack.append(start)
 
+    global flag
+    global noflag
+    flag = False
+    noflag = True
+
     while stack:
         current = stack.pop()  # LIFO
         if current == end:
             temp = current
             while temp.prev: 
                 temp.prev.path = True 
-                temp = temp.prev   
-            print("Camino encontrado")
-            break
+                temp = temp.prev
+            if not flag:
+                flag = True
+                noflag = False
+                print("Camino encontrado")
+            elif flag:
+                continue
 
-        for neighbor in current.neighbors:
-            if not neighbor.visited and not neighbor.wall:
-                neighbor.visited = True
-                neighbor.prev = current
-                stack.append(neighbor)
+        if not flag:
+            for neighbor in current.neighbors:
+                if not neighbor.visited and not neighbor.wall:
+                    neighbor.visited = True
+                    neighbor.prev = current
+                    stack.append(neighbor)
         
         Grafico()
+        if flag and noflag:
+            break
 
 # PROGRAMA PRINCIPAL
 laberinto = "Laberinto_1.txt" #Cambiar el numero de laberinto correspondiente
