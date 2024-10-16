@@ -1,36 +1,39 @@
+version: '3.8'
+
 services:
   app:
     build:
       context: .
       dockerfile: Dockerfile
     volumes:
-      - .:/app # Montaremos el directorio app de nuestro folder sobre el directorio /app del contenedor
+      - .:/app # Montamos el directorio raíz del proyecto en /app del contenedor
     ports:
       - "8000:8000"
     environment:
       - ENVIRONMENT=docker
       - PYTHONUNBUFFERED=1
+
   pytest:
     build: .
-    command: ["sh","-c","sleep 1 && cd app && pytest"]    
+    command: ["sh", "-c", "sleep 1 && pytest tests/"]  # Ejecutar pytest en el directorio tests/
     working_dir: /app
     volumes:
       - .:/app
     environment:
       - ENVIRONMENT=docker
+      - PYTHONUNBUFFERED=1
+      - PYTHONPATH=/app
     depends_on:
       - app
+
   behave:
     build: .
-    command: ["sh","-c","sleep 1 && cd app && behave --tags=-wip"]    
+    command: ["sh", "-c", "sleep 1 && behave --tags=-wip"]    
     working_dir: /app
     volumes:
       - .:/app
     environment:
       - ENVIRONMENT=docker
+      - PYTHONUNBUFFERED=1
     depends_on:
       - app
-  
-  
-volumes:
-  grafana-storage: {}
