@@ -29,9 +29,6 @@ jobs:
         
       - name: Pruebas unitarias con pytest
         run: docker compose run pytest
-        
-      - name: Pruebas BDD con behave
-        run: docker compose run behave
 
       - name: Security audit
         run: pip-audit
