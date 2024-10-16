@@ -89,7 +89,7 @@ def Grafico(win):
     pygame.display.flip()
 
 
-def DFS():
+def DFS(win):
     start = grid[0][0]
     end = grid[cols-1][rows-1]
 
@@ -114,22 +114,24 @@ def DFS():
                 print("Camino encontrado")
             elif flag:
                 continue
-
-        if not flag:
-            for neighbor in current.neighbors:
-                if not neighbor.visited and not neighbor.wall:
-                    neighbor.visited = True
-                    neighbor.prev = current
-                    stack.append(neighbor)
+        for neighbor in current.neighbors:
+            if not neighbor.visited and not neighbor.wall:
+                neighbor.visited = True
+                neighbor.prev = current
+                stack.append(neighbor)
         
-        Grafico()
-        if flag and noflag:
-            break
+        Grafico(win)
+        
+    temp = end
+    while temp.prev:
+        temp.path = True
+        temp = temp.prev
+    Grafico(win)
 
 def ejecutar_dfs(laberinto): #Función para ejecutar BFS e iniciar pygame solo cuando sea lo soliciten
     pygame.init()
     win = pygame.display.set_mode((650, 650))
-    pygame.display.set_caption("Algoritmo de DFS - Presione ENTER para comenzar")
+    #pygame.display.set_caption("Algoritmo de DFS - Presione ENTER para comenzar")
     Tk().wm_withdraw()
     #messagebox.showinfo("Algoritmo de DFS", "No mueva la ventana mientras se ejecuta el algoritmo")
 
