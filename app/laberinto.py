@@ -1,32 +1,6 @@
-import os       # Manipulacion de directorios
-import sys      # Eventos del sistema
-import pygame   # Motor grafico
-import random   # Random
-from tkinter import messagebox, Tk  # Messagebox
-
-rojo = (255, 0, 0)
-azul = (0, 0, 255)
-negro = (0, 0, 0)
-indicador = (239, 48, 188)
-fondo = (44, 62, 80)
-laberinto = 'Laberinto_'
-indice = 1
-directorio = laberinto + str(indice) + '.txt'
-
-size = (width, height) = 650, 650
-columna, fila = 65, 65
-w = h = 10
-
-pygame.init()
-win = pygame.display.set_mode(size)
-pygame.display.set_caption(laberinto.replace('_', ' - ENTER'))
-clock = pygame.time.Clock
-
-mapa = []
-lista = []
-inicio = False
-fin = False
-
+import random
+import os
+import re
 
 class Spot:
     def __init__(self, i, j):
@@ -34,144 +8,126 @@ class Spot:
         self.pared = True
         self.visitado = False
 
-    def show(self, win, columna):
-        if self.pared == True:
-            columna = negro
-        pygame.draw.rect(win, columna, (self.x*w, self.y*h, w-1, h-1))
+def crear_mapa(cols, rows):
+    mapa = []
+    for i in range(cols):
+        arr = []
+        for j in range(rows):
+            arr.append(Spot(i, j))
+        mapa.append(arr)
+    return mapa
 
-def ParedEste(x, y):
-    mapa[x+1][y].pared = False
-    mapa[x+2][y].pared = False
+def quitar_pared_este(mapa, x, y):
+    if x + 2 < len(mapa):
+        mapa[x+1][y].pared = False
+        mapa[x+2][y].pared = False
+    else:
+        print(f"No se puede quitar pared al Este desde ({x}, {y}) - Fuera de limites.")
 
+def quitar_pared_oeste(mapa, x, y):
+    if x - 2 >= 0:
+        mapa[x-1][y].pared = False
+        mapa[x-2][y].pared = False
+    else:
+        print(f"No se puede quitar pared al Oeste desde ({x}, {y}) - Fuera de limites.")
 
-def ParedOeste(x, y):
-    mapa[x-1][y].pared = False
-    mapa[x-2][y].pared = False
+def quitar_pared_norte(mapa, x, y):
+    if y - 2 >= 0:
+        mapa[x][y-1].pared = False
+        mapa[x][y-2].pared = False
+    else:
+        print(f"No se puede quitar pared al Norte desde ({x}, {y}) - Fuera de limites.")
 
+def quitar_pared_sur(mapa, x, y):
+    if y + 2 < len(mapa[0]):
+        mapa[x][y+1].pared = False
+        mapa[x][y+2].pared = False
+    else:
+        print(f"No se puede quitar pared al Sur desde ({x}, {y}) - Fuera de limites.")
 
-def ParedNorte(x, y):
-    mapa[x][y-1].pared = False
-    mapa[x][y-2].pared = False
-
-
-def ParedSur(x, y):
-    mapa[x][y+1].pared = False
-    mapa[x][y+2].pared = False
-
-
-def UnicaCelda(x, y):
-    mapa[x][y].show(win, indicador)
-    pygame.display.flip()
-
-
-def Grafo():
-    win.fill(negro)
-    for i in range(columna):
-        for j in range(fila):
-            spot = mapa[i][j]
-            spot.show(win, fondo)
-            if spot == mapa[0][0]:
-                spot.show(win, azul)
-            if spot == mapa[columna-1][fila-1]:
-                spot.show(win, rojo)
-    pygame.display.flip()
-
-def EscribirArchivo():
-    global directorio
-    global indice
-    while directorio in os.listdir():
-        indice += 1
-        directorio = laberinto + str(indice) + '.txt'
-
-    with open(directorio, 'w') as wf:
-        for i in range(columna):
-            for j in range(fila):
-                if mapa[j][i].pared:
-                    wf.write("I")
-                else:
-                    wf.write("·")
-            wf.write("\n")
-    return directorio
-
-def laberinto(x, y):
-    UnicaCelda(x, y)
+def generar_laberinto(mapa, cols, rows):
+    lista = []
+    x, y = 0, 0
     lista.append((x, y))
-    while len(lista) > 0:
-        celda = []
-        if x < columna - 2:  
-            if not(mapa[x+2][y].visitado):
-                celda.append("Este")
-        if x > 1:         
-            if not(mapa[x-2][y].visitado):
-                celda.append("Oeste")
-        if y < fila - 2:   
-            if not(mapa[x][y+2].visitado):
-                celda.append("Sur")
-        if y > 1:          
-            if not(mapa[x][y-2].visitado):
-                celda.append("Norte")
+    mapa[x][y].pared = False
+    print(f"Generando laberinto")
 
-        if len(celda) > 0:
-            celdaAdyasente = (random.choice(celda))
+    while lista:
+        celda_actual = lista[-1]
+        x, y = celda_actual
+        mapa[x][y].visitado = True
 
-            if celdaAdyasente == "Este":
-                ParedEste(x, y)
-                x = x+2
-                mapa[x-1][y].visitado = True
-                mapa[x][y].visitado = True
-                lista.append((x, y))
+        direcciones = []
+        if x < cols - 2 and not mapa[x+2][y].visitado:
+            direcciones.append("Este")
+        if x > 1 and not mapa[x-2][y].visitado:
+            direcciones.append("Oeste")
+        if y < rows - 2 and not mapa[x][y+2].visitado:
+            direcciones.append("Sur")
+        if y > 1 and not mapa[x][y-2].visitado:
+            direcciones.append("Norte")
 
-
-            elif celdaAdyasente == "Oeste":
-                ParedOeste(x, y)
-                x = x-2
-                mapa[x+1][y].visitado = True
-                mapa[x][y].visitado = True
-                lista.append((x, y))
-
-            elif celdaAdyasente == "Norte":
-                ParedNorte(x, y)
-                y = y - 2
-                mapa[x][y+1].visitado = True
-                mapa[x][y].visitado = True
-                lista.append((x, y))
-
-            elif celdaAdyasente == "Sur":
-                ParedSur(x, y)
-                y = y + 2
-                mapa[x][y-1].visitado = True
-                mapa[x][y].visitado = True
-                lista.append((x, y))
+        if direcciones:
+            direccion = random.choice(direcciones)
+            if direccion == "Este":
+                quitar_pared_este(mapa, x, y)
+                x += 2
+            elif direccion == "Oeste":
+                quitar_pared_oeste(mapa, x, y)
+                x -= 2
+            elif direccion == "Norte":
+                quitar_pared_norte(mapa, x, y)
+                y -= 2
+            elif direccion == "Sur":
+                quitar_pared_sur(mapa, x, y)
+                y += 2
+            lista.append((x, y))
         else:
-            x, y = lista.pop()
-        Grafo()
-        UnicaCelda(x, y)
-        pygame.display.flip()
-    global fin
-    fin = True
+            lista.pop()
 
-# PROGRAMA PRINCIPAL
-for i in range(columna):
-    arr = []
-    for j in range(fila):
-        arr.append(Spot(i, j))
-    mapa.append(arr)
+    print("Generación del laberinto completada.")
+    return mapa
 
-start = mapa[0][0]
-start.pared = False
-end = mapa[columna-1][fila-1]
-end.pared = False
+def exportar_laberinto(mapa, cols, rows, filename):
+    try:
+        with open(filename, 'w') as wf:
+            for y in range(rows):
+                for x in range(cols):
+                    if mapa[x][y].pared:
+                        wf.write("I")
+                    else:
+                        wf.write("·")
+                wf.write("\n")
+        print(f"Laberinto exportado a '{filename}'.")
+    except Exception as e:
+        print(f"Error al exportar el laberinto: {e}")
+    return filename
 
-while True:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            pygame.quit()
-            sys.exit()
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_RETURN:
-                inicio = True
-    if inicio and not fin:
-        laberinto(0, 0)
-        msg = EscribirArchivo()
-        Tk().wm_withdraw()
-        messagebox.showinfo("Generador de laberintos","El laberinto ha sido generado" + directorio)
+def obtener_siguiente_index(prefijo, extension=".txt"):
+    pattern = re.compile(rf"{re.escape(prefijo)}(\d+){re.escape(extension)}$")
+    max_index = 0
+    for archivo in os.listdir('.'):
+        match = pattern.match(archivo)
+        if match:
+            index = int(match.group(1))
+            if index > max_index:
+                max_index = index
+    return max_index + 1
+
+def main():
+    try:
+        cols, rows = 65, 65  # Ajustar el tamaño del laberinto
+        mapa = crear_mapa(cols, rows)
+        mapa = generar_laberinto(mapa, cols, rows)
+        
+        laberinto = 'Laberinto_'
+        extension = '.txt'
+        index = obtener_siguiente_index(laberinto, extension)
+        filename = f"{laberinto}{index}{extension}"
+        
+        exportar_laberinto(mapa, cols, rows, filename)
+    except Exception as e:
+        print(f"Error durante la generación del laberinto: {e}")
+
+if __name__ == "__main__":
+    main()
