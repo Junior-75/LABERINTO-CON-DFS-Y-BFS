@@ -11,15 +11,8 @@ WHITE = (255, 255, 255)
 SHORTEST_PATH = (239, 48, 188)
 COLOR_DE_FONDO = (44, 62, 80)
 
-size = (width, height) = 650, 650
 cols, rows = 65, 65
 w = h = 10
-
-pygame.init()
-win = pygame.display.set_mode(size)
-pygame.display.set_caption("Algoritmo de DFS - Presione ENTER para comenzar")
-Tk().wm_withdraw()
-messagebox.showinfo("Algoritmo de DFS","No mueva la ventana mientras se ejecuta el algoritmo")
 
 grid = []
 stack = []
@@ -47,14 +40,14 @@ class Spot:
         else:
             pygame.draw.circle(win, col, (self.x*w+w//2, self.y*h+h//2), w//3)
 
-    def add_neighbors(self, grid):  # ← ↑ → ↓
-        if self.x < cols - 1:   # East Cell:    → ■ 
+    def add_neighbors(self, grid):
+        if self.x < cols - 1:
             self.neighbors.append(grid[self.x+1][self.y])
-        if self.x > 0:          # West Cell:    ← ■  
+        if self.x > 0:
             self.neighbors.append(grid[self.x-1][self.y])
-        if self.y < rows - 1:   # North Cell:    ■ ↓ 
+        if self.y < rows - 1:
             self.neighbors.append(grid[self.x][self.y+1])
-        if self.y > 0:          # South Cell:    ■ ↑
+        if self.y > 0:
             self.neighbors.append(grid[self.x][self.y-1])
 
 def Set_Spots():
@@ -76,7 +69,7 @@ def Get_Maze(laberinto):
                 if line[j] == 'I':
                     grid[j][i].wall = True
 
-def Grafico():
+def Grafico(win):
     win.fill(BLACK)
     for i in range(cols):
         for j in range(rows):
@@ -133,19 +126,20 @@ def DFS():
         if flag and noflag:
             break
 
-# PROGRAMA PRINCIPAL
-laberinto = "Laberinto_1.txt" #Cambiar el numero de laberinto correspondiente
-while True:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            pygame.quit()
-            sys.exit()
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_RETURN:
-                startflag = True
+def ejecutar_dfs(laberinto): #Función para ejecutar BFS e iniciar pygame solo cuando sea lo soliciten
+    pygame.init()
+    win = pygame.display.set_mode((650, 650))
+    pygame.display.set_caption("Algoritmo de DFS - Presione ENTER para comenzar")
+    Tk().wm_withdraw()
+    #messagebox.showinfo("Algoritmo de DFS", "No mueva la ventana mientras se ejecuta el algoritmo")
 
-    if startflag and not end_maze:
-        Set_Spots()
-        Get_Maze(laberinto)
-        DFS()
-        end_maze = True
+    Set_Spots()
+    Get_Maze(laberinto)
+    DFS(win)
+
+    # Esperar a que el usuario cierre la ventana
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
